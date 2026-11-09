@@ -63,6 +63,12 @@ class BenchQuery:
     def table(self) -> str:
         return _parse_ddl(self.index_ddl)[1]
 
+    @property
+    def index_qualified(self) -> str:
+        """Index name with the table's schema, so DROP finds it whatever the search_path is."""
+        schema, dot, _ = self.table.rpartition(".")
+        return f"{schema}.{self.index_name}" if dot else self.index_name
+
 
 def _parse_ddl(ddl: str) -> tuple[str, str]:
     match = _DDL.match(ddl.strip())
@@ -115,8 +121,9 @@ def run_benchmark(
         for phase in ("before", "after"):
             if phase == "after":
                 cursor.execute(query.index_ddl.rstrip(";"))
-                cursor.execute(f"ANALYZE {query.table}")
             try:
+                if phase == "after":
+                    cursor.execute(f"ANALYZE {query.table}")
                 for run in range(1, repeat + 1):
                     millis, cost = _timed_run(cursor, query.sql)
                     rows.append(
@@ -131,7 +138,7 @@ def run_benchmark(
                     )
             finally:
                 if phase == "after":
-                    cursor.execute(f"DROP INDEX IF EXISTS {query.index_name}")
+                    cursor.execute(f"DROP INDEX IF EXISTS {query.index_qualified}")
     return rows
 
 

@@ -18,6 +18,14 @@ from .advisor import IndexSuggestion
 from .plan import parse_explain
 
 _READ_ONLY = re.compile(r"^\s*(SELECT|WITH|VALUES|TABLE)\b", re.IGNORECASE)
+_LITERALS = re.compile(r"'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\"")
+# EXPLAIN ANALYZE executes the statement, so a data-modifying CTE (WITH ... DELETE ...) or
+# SELECT ... FOR UPDATE must not get through just because the text starts with WITH or SELECT.
+_MODIFYING = re.compile(
+    r"\b(INSERT|UPDATE|DELETE|MERGE|TRUNCATE|DROP|ALTER|CREATE|GRANT|REVOKE|COPY|CALL|VACUUM|"
+    r"REINDEX|REFRESH)\b",
+    re.IGNORECASE,
+)
 
 
 class Cursor(Protocol):
@@ -46,6 +54,11 @@ def check_query(sql: str) -> str:
     text = sql.strip().rstrip(";").strip()
     if not _READ_ONLY.match(text) or ";" in text:
         raise ValueError("query must be a single SELECT, WITH, VALUES or TABLE statement")
+    if _MODIFYING.search(_LITERALS.sub("''", text)):
+        raise ValueError(
+            "query contains a data-modifying or locking keyword (INSERT, UPDATE, DELETE, ...); "
+            "only plain read-only queries are accepted"
+        )
     return text
 
 
