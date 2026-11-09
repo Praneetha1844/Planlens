@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "planlens"
+version = "0.1.0"
+description = "PostgreSQL query-plan analyser and index advisor: parses EXPLAIN (FORMAT JSON), flags anti-patterns and proposes indexes."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Praneetha Potharaju" }]
+requires-python = ">=3.12"
+dependencies = []  # the core library uses only the standard library
+
+[project.optional-dependencies]
+db = ["psycopg[binary]>=3.2,<4"]  # benchmark harness and hypopg what-if adapter
+dev = ["pytest>=8.2,<9", "ruff>=0.6", "mypy>=1.11"]
+
+[project.scripts]
+planlens = "planlens.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/planlens"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "C4", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+
+[[tool.mypy.overrides]]
+module = ["psycopg.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"
