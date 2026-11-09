@@ -37,8 +37,18 @@ class Thresholds:
             raise ValueError("min_filtered_fraction must be in (0, 1]")
         if self.mismatch_factor <= 1:
             raise ValueError("mismatch_factor must be > 1")
-        if min(self.min_rows_scanned, self.min_rows_for_mismatch, self.nested_loop_loops) < 1:
+        if (
+            min(
+                self.min_rows_scanned,
+                self.min_rows_for_mismatch,
+                self.nested_loop_loops,
+                self.high_loops,
+            )
+            < 1
+        ):
             raise ValueError("row and loop thresholds must be >= 1")
+        if self.estimate_only_cost < 0:
+            raise ValueError("estimate_only_cost must be >= 0")
 
 
 @dataclass(frozen=True)
@@ -218,9 +228,20 @@ def detect_nested_loop_high_loops(plan: Plan, limits: Thresholds) -> list[Findin
 def detect_estimate_mismatch(plan: Plan, limits: Thresholds) -> list[Finding]:
     """Planner row estimate far from reality, per loop, in either direction."""
     findings: list[Finding] = []
+    under_limit = {
+        id(descendant)
+        for limit in plan.nodes()
+        if limit.node_type == "Limit"
+        for child in limit.children
+        for descendant in child.walk()
+    }
     for node in plan.nodes():
         if not node.has_actuals or node.actual_rows is None:
             continue
+        if node.actual_loops == 0:  # never executed, so there is nothing to compare
+            continue
+        if node.actual_rows < node.plan_rows and id(node) in under_limit:
+            continue  # a LIMIT stops its input early, so fewer rows than planned is expected
         high = max(node.actual_rows, node.plan_rows)
         low = max(min(node.actual_rows, node.plan_rows), 1.0)
         if high < limits.min_rows_for_mismatch or high / low < limits.mismatch_factor:
