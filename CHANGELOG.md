@@ -4,6 +4,19 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- Sibling plan nodes that share a label (for example two scans of one table under an `Append`) now get unique paths, so findings and index suggestions can no longer attach to the wrong node.
+- `estimate_mismatch` no longer reports nodes that never ran (`Actual Loops: 0`) or nodes that produced fewer rows than planned below a `LIMIT`.
+- `bench` and the what-if adapter reject data-modifying and locking statements (for example `WITH ... DELETE ...` and `FOR UPDATE`), which `EXPLAIN ANALYZE` would have executed.
+- `bench` drops its index with the table's schema and also when `ANALYZE` fails.
+- `Thresholds` validates `high_loops` and `estimate_only_cost`.
+
+### Added
+- Documentation: index, CLI reference, library API reference, development guide, glossary and `SECURITY.md`.
+- Project URLs in package metadata and a `.dockerignore`.
+
 ## [0.1.0]
 
 ### Added

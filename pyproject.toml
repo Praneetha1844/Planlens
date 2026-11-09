@@ -16,6 +16,11 @@ dependencies = []  # the core library uses only the standard library
 db = ["psycopg[binary]>=3.2,<4"]  # benchmark harness and hypopg what-if adapter
 dev = ["pytest>=8.2,<9", "ruff>=0.6", "mypy>=1.11"]
 
+[project.urls]
+Homepage = "https://github.com/Praneetha1844/Planlens"
+Source = "https://github.com/Praneetha1844/Planlens"
+Issues = "https://github.com/Praneetha1844/Planlens/issues"
+
 [project.scripts]
 planlens = "planlens.cli:main"
 
