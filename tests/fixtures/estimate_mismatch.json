@@ -1,0 +1,23 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Seq Scan",
+      "Parallel Aware": false,
+      "Relation Name": "customers",
+      "Schema": "public",
+      "Alias": "customers",
+      "Startup Cost": 0.0,
+      "Total Cost": 210.0,
+      "Plan Rows": 12,
+      "Plan Width": 40,
+      "Actual Startup Time": 0.02,
+      "Actual Total Time": 2.1,
+      "Actual Rows": 4800,
+      "Actual Loops": 1,
+      "Filter": "((country = 'IN'::text) AND (created_at > '2023-01-01'::date))",
+      "Rows Removed by Filter": 5200
+    },
+    "Planning Time": 0.1,
+    "Execution Time": 2.3
+  }
+]

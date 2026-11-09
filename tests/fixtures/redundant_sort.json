@@ -1,0 +1,45 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Sort",
+      "Parallel Aware": false,
+      "Startup Cost": 900.0,
+      "Total Cost": 925.0,
+      "Plan Rows": 10000,
+      "Plan Width": 36,
+      "Sort Key": ["customers.name"],
+      "Sort Method": "quicksort",
+      "Sort Space Used": 1200,
+      "Sort Space Type": "Memory",
+      "Plans": [
+        {
+          "Node Type": "Sort",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Startup Cost": 800.0,
+          "Total Cost": 825.0,
+          "Plan Rows": 10000,
+          "Plan Width": 36,
+          "Sort Key": ["customers.id"],
+          "Sort Method": "quicksort",
+          "Sort Space Used": 1200,
+          "Sort Space Type": "Memory",
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Relation Name": "customers",
+              "Schema": "public",
+              "Alias": "customers",
+              "Startup Cost": 0.0,
+              "Total Cost": 210.0,
+              "Plan Rows": 10000,
+              "Plan Width": 36
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

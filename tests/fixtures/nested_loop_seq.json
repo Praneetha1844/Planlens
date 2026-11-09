@@ -1,0 +1,57 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Join Type": "Inner",
+      "Startup Cost": 0.0,
+      "Total Cost": 790000.0,
+      "Plan Rows": 450,
+      "Plan Width": 20,
+      "Actual Startup Time": 0.05,
+      "Actual Total Time": 1210.0,
+      "Actual Rows": 452,
+      "Actual Loops": 1,
+      "Join Filter": "(i.order_id = o.id)",
+      "Rows Removed by Join Filter": 44999548,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Relation Name": "orders",
+          "Schema": "public",
+          "Alias": "o",
+          "Startup Cost": 0.0,
+          "Total Cost": 2845.0,
+          "Plan Rows": 150,
+          "Plan Width": 8,
+          "Actual Startup Time": 0.02,
+          "Actual Total Time": 17.0,
+          "Actual Rows": 150,
+          "Actual Loops": 1,
+          "Filter": "(customer_id = 4242)",
+          "Rows Removed by Filter": 99850
+        },
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Relation Name": "order_items",
+          "Schema": "public",
+          "Alias": "i",
+          "Startup Cost": 0.0,
+          "Total Cost": 5200.0,
+          "Plan Rows": 300000,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.01,
+          "Actual Total Time": 7.6,
+          "Actual Rows": 300000,
+          "Actual Loops": 150
+        }
+      ]
+    },
+    "Planning Time": 0.3,
+    "Execution Time": 1211.0
+  }
+]

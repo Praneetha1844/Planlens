@@ -1,0 +1,23 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Seq Scan",
+      "Parallel Aware": false,
+      "Relation Name": "orders",
+      "Schema": "public",
+      "Alias": "orders",
+      "Startup Cost": 0.0,
+      "Total Cost": 2845.0,
+      "Plan Rows": 4800,
+      "Plan Width": 14,
+      "Actual Startup Time": 0.021,
+      "Actual Total Time": 18.4,
+      "Actual Rows": 4963,
+      "Actual Loops": 1,
+      "Filter": "((status = 'open'::text) AND (created_at >= '2024-06-01'::date))",
+      "Rows Removed by Filter": 95037
+    },
+    "Planning Time": 0.12,
+    "Execution Time": 18.9
+  }
+]

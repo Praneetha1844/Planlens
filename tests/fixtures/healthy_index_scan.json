@@ -1,0 +1,24 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Index Scan",
+      "Parallel Aware": false,
+      "Scan Direction": "Forward",
+      "Index Name": "idx_orders_customer_id",
+      "Relation Name": "orders",
+      "Schema": "public",
+      "Alias": "orders",
+      "Startup Cost": 0.29,
+      "Total Cost": 45.3,
+      "Plan Rows": 20,
+      "Plan Width": 14,
+      "Actual Startup Time": 0.03,
+      "Actual Total Time": 0.09,
+      "Actual Rows": 18,
+      "Actual Loops": 1,
+      "Index Cond": "(customer_id = 4242)"
+    },
+    "Planning Time": 0.1,
+    "Execution Time": 0.12
+  }
+]

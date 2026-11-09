@@ -1,0 +1,16 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Seq Scan",
+      "Parallel Aware": false,
+      "Relation Name": "orders",
+      "Schema": "public",
+      "Alias": "orders",
+      "Startup Cost": 0.0,
+      "Total Cost": 2845.0,
+      "Plan Rows": 20,
+      "Plan Width": 14,
+      "Filter": "(customer_id = 4242)"
+    }
+  }
+]
