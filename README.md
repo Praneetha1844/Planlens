@@ -90,7 +90,7 @@ flowchart LR
   A -.optional.-> B[bench.py<br/>before / after timing]
 ```
 
-More in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Background on plans, costs and index design: [docs/SQL_NOTES.md](docs/SQL_NOTES.md).
+More in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). Background on plans, costs and index design: [docs/SQL_NOTES.md](docs/SQL_NOTES.md). Every document is listed in [docs/index.md](docs/index.md).
 
 ## Project structure
 
@@ -118,6 +118,9 @@ docs/            architecture, SQL notes, data model, ADRs
 - Conditions are read with a tolerant text reader. Function calls, `OR`, `LIKE` and other expressions are skipped rather than guessed at.
 - Sort-index suggestions are made only when the sort sits over a single table and its keys are plain columns.
 - `redundant_sort` flags only a Sort directly on another Sort.
+- `estimate_mismatch` skips nodes that never ran (`Actual Loops: 0`) and, below a `LIMIT`, skips nodes that produced fewer rows than planned, because a LIMIT stops its input early. Underestimates below a LIMIT are still reported.
+- Parallel plans, `Incremental Sort`, subplans and CTE scans are parsed, but only the shapes above are analysed.
+- Query files for `planlens bench` must be plain read-only queries. Anything containing a data-modifying or locking keyword (`INSERT`, `UPDATE`, `DELETE`, `FOR UPDATE` and so on) outside a string literal is rejected, because `EXPLAIN ANALYZE` runs the statement. Functions with side effects cannot be detected, which is another reason to use a disposable database.
 - Estimated plans (no `ANALYZE`) carry less information; their findings are labelled and scored lower.
 - The score is a ranking heuristic, not a speedup prediction. The hypopg adapter compares planner estimates, not real timings.
 - Identifier quoting uses a short list of reserved words, not the full PostgreSQL keyword table.

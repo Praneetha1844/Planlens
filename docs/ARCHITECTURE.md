@@ -53,7 +53,7 @@ sequenceDiagram
 
 | Module | Responsibility | Notes |
 |---|---|---|
-| `plan.py` | Parse EXPLAIN JSON into `Plan` and `PlanNode`; build a readable `path` for each node (`Nested Loop > Seq Scan on order_items i (inner)`) | Raises `PlanParseError` for any malformed input; row counts keep Postgres's per-loop meaning |
+| `plan.py` | Parse EXPLAIN JSON into `Plan` and `PlanNode`; build a readable, unique `path` for each node (`Nested Loop > Seq Scan on order_items i (inner)`; siblings that would share a path get ` #1`, ` #2`) | Raises `PlanParseError` for any malformed input; row counts keep Postgres's per-loop meaning |
 | `expr.py` | Read `Filter`, `Join Filter` and `Sort Key` strings into `Predicate` and `SortKey` | Tolerant text reader; unsupported shapes become `expression`, `or` or `other` and are never turned into index columns |
 | `findings.py` | Six detectors plus `Thresholds` | Each detector is `(Plan, Thresholds) -> list[Finding]`; add one by appending to `DETECTORS` |
 | `advisor.py` | Turn findings into btree index suggestions | Column order, de-duplication, prefix elimination, existing-index suppression, DDL, naming, quoting |
@@ -74,7 +74,7 @@ Candidates that are a strict prefix of another candidate on the same table are d
 ## Safety decisions
 
 - **Generated SQL is quoted.** Identifiers come from plan text, which is untrusted input, so they pass through `quote_ident`. DDL is printed for a human to run; Planlens never executes suggested DDL itself.
-- **The benchmark harness runs only plain `CREATE INDEX` statements** on one table, and only read-only queries. Anything else is rejected before a connection is used. It requires `--yes` because it creates and drops indexes.
+- **The benchmark harness runs only plain `CREATE INDEX` statements** on one table, and only plain read-only queries (data-modifying and locking keywords outside string literals are rejected, because `EXPLAIN ANALYZE` executes the statement). Anything else is rejected before a connection is used. The index is dropped in a `finally` block, qualified with the table's schema, even if `ANALYZE` or a timed run fails. It requires `--yes` because it creates and drops indexes.
 - **HTML output escapes all plan-derived text.**
 - **The hypopg adapter accepts a single read-only statement** and uses plain `EXPLAIN`, so nothing is executed.
 
