@@ -216,3 +216,26 @@ def test_what_if_rejects_non_read_only_queries(sql: str) -> None:
 
 def test_check_query_strips_trailing_semicolon() -> None:
     assert check_query("  SELECT 1 ; ") == "SELECT 1"
+
+
+def test_drop_uses_the_tables_schema() -> None:
+    cursor = ScriptedCursor(times=[1.0, 1.0])
+    query = BenchQuery("q1", "SELECT 1", "CREATE INDEX idx_t_a ON shop.t (a);")
+    run_benchmark(ScriptedConnection(cursor), [query], repeat=1)
+    assert "ANALYZE shop.t" in cursor.statements
+    assert cursor.statements[-1] == "DROP INDEX IF EXISTS shop.idx_t_a"
+
+
+class FailingAnalyze(ScriptedCursor):
+    def execute(self, query: str, params: Sequence[object] | None = None) -> None:
+        super().execute(query, params)
+        if query.startswith("ANALYZE"):
+            raise RuntimeError("analyze failed")
+
+
+def test_index_is_dropped_even_if_analyze_fails() -> None:
+    cursor = FailingAnalyze(times=[5.0])
+    query = BenchQuery("q1", "SELECT 1", "CREATE INDEX idx_t_a ON t (a);")
+    with pytest.raises(RuntimeError, match="analyze failed"):
+        run_benchmark(ScriptedConnection(cursor), [query], repeat=1)
+    assert cursor.statements[-1] == "DROP INDEX IF EXISTS idx_t_a"
