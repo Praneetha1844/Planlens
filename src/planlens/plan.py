@@ -163,7 +163,31 @@ def _build(raw: Any, parent_path: str) -> PlanNode:
     if not isinstance(children, list):
         raise PlanParseError("'Plans' must be a list")
     node.children = [_build(child, node.path) for child in children]
+    _disambiguate_siblings(node.children)
     return node
+
+
+def _rebase(node: PlanNode, old: str, new: str) -> None:
+    """Replace the leading `old` of this subtree's paths with `new`."""
+    node.path = new + node.path[len(old) :]
+    for child in node.children:
+        _rebase(child, old, new)
+
+
+def _disambiguate_siblings(children: list[PlanNode]) -> None:
+    """Give siblings that share a path (e.g. two scans of one table under an Append) a ` #n` suffix.
+
+    Paths identify nodes in findings and in the advisor, so they must be unique.
+    """
+    counts: dict[str, int] = {}
+    for child in children:
+        counts[child.path] = counts.get(child.path, 0) + 1
+    seen: dict[str, int] = {}
+    for child in children:
+        old = child.path
+        if counts[old] > 1:
+            seen[old] = seen.get(old, 0) + 1
+            _rebase(child, old, f"{old} #{seen[old]}")
 
 
 def parse_explain(data: str | bytes | list[Any] | dict[str, Any]) -> Plan:
