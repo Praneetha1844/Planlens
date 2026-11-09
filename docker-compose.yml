@@ -1,0 +1,33 @@
+# Disposable PostgreSQL for the benchmark and demo data. Written for local use; not run in CI.
+# The credentials below are placeholders for a throwaway local database. Do not reuse them.
+#
+#   docker compose up -d db
+#   docker compose --profile tools run --rm planlens analyze /work/tests/fixtures/seq_scan_filter.json
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: planlens
+      POSTGRES_PASSWORD: planlens
+      POSTGRES_DB: planlens
+    ports:
+      - "127.0.0.1:5433:5432" # localhost only
+    volumes:
+      - planlens-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U planlens"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  planlens:
+    build: .
+    profiles: ["tools"]
+    volumes:
+      - .:/work:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  planlens-data:
