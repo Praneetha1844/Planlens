@@ -24,6 +24,8 @@ _ATOM = re.compile(
 _IDENT = re.compile(r"^[A-Za-z_][\w]*(\.[A-Za-z_][\w]*)?$")
 _RESERVED_RHS = frozenset({"NULL", "TRUE", "FALSE"})
 _RANGE_OPS = frozenset({"<", "<=", ">", ">="})
+# Postgres prints calls as `name(`; `ANY (` and `(col)::type` have a space or no name before "("
+_FUNCTION_CALL = re.compile(r"[A-Za-z_]\w*\(")
 
 
 @dataclass(frozen=True)
@@ -114,6 +116,8 @@ def _split_ref(token: str) -> ColumnRef:
 
 
 def _atom(text: str) -> Predicate:
+    if _FUNCTION_CALL.search(text):
+        return Predicate(kind="expression", text=text)
     cleaned = _normalise(text)
     match = _ATOM.match(cleaned)
     if not match:
@@ -170,7 +174,7 @@ def parse_sort_key(text: str) -> SortKey:
     """Parse one `Sort Key` entry. Expressions yield `column=None`."""
     descending = bool(re.search(r"\sDESC\b", text, re.IGNORECASE))
     bare = _normalise(_DIRECTION.sub("", text))
-    if not _IDENT.match(bare):
+    if _FUNCTION_CALL.search(text) or not _IDENT.match(bare):
         return SortKey(column=None, qualifier=None, descending=descending, text=text)
     ref = _split_ref(bare)
     return SortKey(
